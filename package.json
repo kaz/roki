@@ -4,7 +4,9 @@
   "private": true,
   "dependencies": {
     "@octokit/rest": "^18.0.6",
+    "@types/js-yaml": "^3.12.5",
     "@types/rmfr": "^2.0.0",
+    "js-yaml": "^3.14.0",
     "rmfr": "^2.0.0"
   },
   "devDependencies": {
