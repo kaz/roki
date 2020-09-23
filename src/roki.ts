@@ -10,9 +10,10 @@ export default class Roki {
 	}
 
 	async newRevision(path: string, content: string) {
-		this.src.writeFile(path, Buffer.from(content));
+		return this.src.writeFile(path, Buffer.from(content));
 	}
 	async newAttachment(path: string, content: Buffer) {
-		this.src.writeFile(path, content);
+		return this.src.writeFile(path, content);
 	}
+
 }

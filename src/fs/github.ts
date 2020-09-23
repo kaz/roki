@@ -134,6 +134,10 @@ export default class GithubFilesystem implements Filesystem {
 	}
 
 	async commit(message: string, bare: Boolean = false) {
+		if (!this.tx.length) {
+			return;
+		}
+
 		const { data: { sha: tree } } = await this.octokit.git.createTree({
 			owner: this.owner,
 			repo: this.repo,
