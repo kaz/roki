@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "private": true,
   "dependencies": {
-    "@octokit/rest": "^18.0.6"
+    "@octokit/rest": "^18.0.6",
+    "@types/rmfr": "^2.0.0",
+    "rmfr": "^2.0.0"
   },
   "devDependencies": {
     "ts-loader": "^8.0.4",
