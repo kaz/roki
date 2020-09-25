@@ -4,6 +4,7 @@ import yaml from "js-yaml";
 import { Filesystem } from "../fs";
 import { Renderer } from "../md";
 import SourceParser, { PathTranslator, Revision } from "./parser";
+import Printer from "./printer";
 
 export default class Roki {
 	private src: Filesystem;
@@ -48,8 +49,11 @@ export default class Roki {
 
 	async generate() {
 		const parser = new SourceParser(this.src);
-		const pages = await parser.getPages();
+		const printer = new Printer(this.md);
 
-		console.log(pages);
+		return Promise.all(
+			(await printer.print(await parser.getPages()))
+				.map(({ path, content }) => this.dst.writeFile(path, content))
+		);
 	}
 }
