@@ -83,7 +83,7 @@ export default class SourceParser {
 		const fsPath = PathTranslator.revisionDir(pagePath);
 		const entries = await this.src.list(fsPath).catch(() => []);
 
-		return Promise.all(
+		const results = await Promise.all(
 			entries
 				.filter(({ name, directory }) => {
 					if (directory) {
@@ -98,6 +98,7 @@ export default class SourceParser {
 				})
 				.map(async ({ name }) => this.parseRevision(await this.src.readFile(path.join(fsPath, name))))
 		);
+		return results.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 	}
 	private async getAttachments(pagePath: string): Promise<Attachment[]> {
 		const fsPath = PathTranslator.attachmentDir(pagePath);
