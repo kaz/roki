@@ -3,7 +3,7 @@ import yaml from "js-yaml";
 
 import { Filesystem } from "../fs";
 import { Renderer } from "../md";
-import SourceParser, { PathTranslator } from "./parser";
+import SourceParser, { PathTranslator, Revision } from "./parser";
 
 export default class Roki {
 	private src: Filesystem;
@@ -18,11 +18,11 @@ export default class Roki {
 
 	async newRevision(page: string, content: string) {
 		const timestamp = new Date();
-		const meta = {
-			page,
-			timestamp,
+		const meta: Omit<Revision, "content"> = {
 			id: timestamp.getTime().toString(36),
+			timestamp,
 		};
+
 		return this.src.writeFile(
 			PathTranslator.revisionFile(page, meta.id),
 			Buffer.from(["---", yaml.safeDump(meta).trim(), "---", content.trim()].join("\n")),

@@ -26,17 +26,17 @@ export class PathTranslator {
 	}
 }
 
-interface Page {
+export interface Page {
 	path: string;
 	revisions: Revision[];
 	attachments: Attachment[];
 }
-interface Revision {
+export interface Revision {
 	id: string;
 	timestamp: Date;
 	content: string;
 }
-interface Attachment {
+export interface Attachment {
 	filename: string;
 	content: Buffer;
 }
