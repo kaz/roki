@@ -2,15 +2,18 @@ import crypto from "crypto";
 import yaml from "js-yaml";
 
 import { Filesystem } from "../fs";
-import { PathTranslator } from "./parser";
+import { Renderer } from "../md";
+import SourceParser, { PathTranslator } from "./parser";
 
 export default class Roki {
 	private src: Filesystem;
 	private dst: Filesystem;
+	private md: Renderer;
 
-	constructor(src: Filesystem, dst: Filesystem) {
+	constructor(src: Filesystem, dst: Filesystem, md: Renderer) {
 		this.src = src;
 		this.dst = dst;
+		this.md = md;
 	}
 
 	async newRevision(page: string, content: string) {
@@ -43,4 +46,10 @@ export default class Roki {
 		return this.src.writeFile(PathTranslator.attachmentFile(page, filename, ""), undefined);
 	}
 
+	async generate() {
+		const parser = new SourceParser(this.src);
+		const pages = await parser.getPages();
+
+		console.log(pages);
+	}
 }

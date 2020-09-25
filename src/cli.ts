@@ -1,18 +1,17 @@
-import GithubFilesystem from "./fs/github";
 import LocalFilesystem from "./fs/local";
+import RendererFactory from "./md";
 import Roki from "./roki";
 
 (async () => {
-	const lfs = new LocalFilesystem("./tmp");
-	const ghfs = await GithubFilesystem.init("kaz", "test", "heads/master", {
-		auth: "183c58e125be2241135f2ff185a732023a5269ee", // discarded!
-	});
+	const srcfs = new LocalFilesystem("./tmp/src");
+	const dstfs = new LocalFilesystem("./tmp/dst");
+	const md = await RendererFactory();
 
-	const roki = new Roki(lfs, ghfs);
+	const roki = new Roki(srcfs, dstfs, md);
 
 	console.log("roki.newRevision");
 	await roki.newRevision("a/b/README.md", "# Hello, world!");
 
-	console.log("ghfs.commit");
-	await ghfs.commit(`${new Date().toLocaleString()} (from CLI)`);
+	console.log("roki.generate");
+	await roki.generate();
 })();

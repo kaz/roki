@@ -76,16 +76,17 @@ export default class SourceParser {
 			}];
 		})());
 
-		return (await Promise.all(pages)).flat();
+		return (await Promise.all(pages)).flat().filter(({ revisions }) => revisions.length);
 	}
 
 	private async getRevisions(pagePath: string): Promise<Revision[]> {
 		const fsPath = PathTranslator.revisionDir(pagePath);
+		const entries = await this.src.list(fsPath).catch(() => []);
 
 		return Promise.all(
-			(await this.src.list(fsPath))
+			entries
 				.filter(({ name, directory }) => {
-					if (!directory) {
+					if (directory) {
 						console.warn("[WARN]", "unexpected directory found:", path.join(fsPath, name));
 						return false;
 					}
@@ -100,11 +101,12 @@ export default class SourceParser {
 	}
 	private async getAttachments(pagePath: string): Promise<Attachment[]> {
 		const fsPath = PathTranslator.attachmentDir(pagePath);
+		const entries = await this.src.list(fsPath).catch(() => []);
 
 		return Promise.all(
-			(await this.src.list(fsPath))
+			entries
 				.filter(({ name, directory }) => {
-					if (!directory) {
+					if (directory) {
 						console.warn("[WARN]", "unexpected directory found:", path.join(fsPath, name));
 						return false;
 					}
