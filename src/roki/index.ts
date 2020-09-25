@@ -1,4 +1,4 @@
-import { Filesystem } from "./fs";
+import { Filesystem } from "../fs";
 
 import path from "path";
 import crypto from "crypto";
