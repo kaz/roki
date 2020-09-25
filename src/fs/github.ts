@@ -1,8 +1,8 @@
-import { Entry, Filesystem } from ".";
-
 import { Octokit } from "@octokit/rest";
 import { OctokitOptions } from "@octokit/core/dist-types/types";
 import { GitGetTreeResponseData } from "@octokit/types/dist-types/generated/Endpoints";
+
+import { Entry, Filesystem } from ".";
 
 interface TreeNode {
 	parent: string;

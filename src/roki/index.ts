@@ -1,8 +1,8 @@
-import { Filesystem } from "../fs";
-
 import path from "path";
 import crypto from "crypto";
 import yaml from "js-yaml";
+
+import { Filesystem } from "../fs";
 
 export default class Roki {
 	private src: Filesystem;

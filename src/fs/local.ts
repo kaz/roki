@@ -1,8 +1,8 @@
-import { Entry, Filesystem } from ".";
-
 import fs from "fs";
 import path from "path";
 import rmrf from "rmfr";
+
+import { Entry, Filesystem } from ".";
 
 export default class LocalFilesystem implements Filesystem {
 	private root: string;
