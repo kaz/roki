@@ -1,0 +1,13 @@
+{{#> _head }}
+<title>{{ path }} (rev:{{ revision.id }})- Roki</title>
+{{/ _head }}
+
+{{#> _body }}
+<main>
+	{{{ revision.content }}}
+</main>
+<footer>
+	revision: {{ revision.id }}
+	revision_created: {{ revision.timestamp }}
+</footer>
+{{/ _body }}
