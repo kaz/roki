@@ -1,62 +1,25 @@
 import fs from "fs";
 import path from "path";
 
-import { Config as LocalFilesystemConfig } from "../fs/local";
-import { Config as GithubFilesystemConfig } from "../fs/github";
-import { Config as MarkdownItRenderConfig } from "../md/markdown-it";
-import Theme from ".";
+import { Template, TemplateStore, Theme } from ".";
 
-type TemplateStore = { [key: string]: string; };
-export type Template = {
-	templates: TemplateStore;
-	partials: TemplateStore;
-};
-
-export { MarkdownItRenderConfig };
-export type RenderConfig = {
-	backend: "markdown-it";
-	config: MarkdownItRenderConfig;
-};
-
-export { LocalFilesystemConfig, GithubFilesystemConfig };
-export type FilesystemConfig = {
-	backend: "local" | "github";
-	config: LocalFilesystemConfig | GithubFilesystemConfig;
-};
-
-type Config = {
-	render: RenderConfig;
-	srcfs: FilesystemConfig;
-	dstfs: FilesystemConfig;
-};
-
-export type ThemeSource = {
-	template: Template;
-	config: Config;
-	preference?: any;
-};
-
-type SerializedThemeLoader = { code: string; };
+type Serialized = { code: string; };
 
 export default abstract class ThemeLoader {
-	abstract async load(): Promise<ThemeSource>;
+	abstract async load(): Promise<Theme>;
 
-	async instantiate(): Promise<Theme> {
-		return new Theme(await this.load());
-	}
-
-	serialize(): () => Promise<SerializedThemeLoader> {
+	serialize(): () => Promise<Serialized> {
 		return async () => ({ code: `module.exports=${JSON.stringify(await this.load())};` });
 	}
-	static deserialize({ code }: SerializedThemeLoader): ThemeLoader {
+	static deserialize({ code }: Serialized): ThemeLoader {
 		return new class extends ThemeLoader {
-			async load(): Promise<ThemeSource> {
+			async load(): Promise<Theme> {
 				return Function(`const module = {}; return ${code};`)();
 			}
 		};
 	}
 
-	protected async loadTemplates(dir: string): Promise<Template> {
+	protected async readTemplateFromFiles(dir: string): Promise<Template> {
 		const template = {
 			templates: {} as TemplateStore,
 			partials: {} as TemplateStore,

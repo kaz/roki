@@ -3,7 +3,7 @@ import Handlebars from "handlebars";
 
 import { Renderer } from "../md";
 import { Page, Revision, Attachment } from "./parser";
-import { Template } from "../theme/loader";
+import { Theme } from "../theme";
 
 type Artifact = {
 	path: string;
@@ -37,15 +37,15 @@ export default class Printer {
 	private commonCtx: CommonContext;
 	private templates: CompiledTemplateSet;
 
-	constructor(md: Renderer, rawTemplate: Template, preference: any) {
+	constructor(md: Renderer, theme: Theme) {
 		this.md = md;
-		this.commonCtx = { preference };
+		this.commonCtx = { preference: theme.preference };
 
-		this.templates = Object.fromEntries(Object.entries(rawTemplate.templates).map(([name, content]) => {
+		this.templates = Object.fromEntries(Object.entries(theme.template.templates).map(([name, content]) => {
 			const fn = Handlebars.compile(content);
 			return [name, (ctx: object) => Buffer.from(fn(ctx))];
 		}));
-		Object.entries(rawTemplate.partials).forEach(([name, content]) => Handlebars.registerPartial(name, content));
+		Object.entries(theme.template.partials).forEach(([name, content]) => Handlebars.registerPartial(name, content));
 	}
 
 	private async pageContext(page: Page, render: Boolean): Promise<PageContext> {

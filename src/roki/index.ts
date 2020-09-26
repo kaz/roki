@@ -2,7 +2,8 @@ import crypto from "crypto";
 import yaml from "js-yaml";
 
 import { Filesystem } from "../fs";
-import Theme from "../theme";
+import { Renderer } from "../md";
+import { Theme } from "../theme";
 import SourceParser, { PathTranslator, Revision } from "./parser";
 import Printer from "./printer";
 
@@ -45,9 +46,9 @@ export default class Roki {
 		return this.src.writeFile(PathTranslator.attachmentFile(page, filename, ""), undefined);
 	}
 
-	async generate(theme: Theme) {
+	async generate(md: Renderer, theme: Theme) {
 		const parser = new SourceParser(this.src);
-		const printer = new Printer(await theme.getRenderer(), theme.template, theme.preference);
+		const printer = new Printer(md, theme);
 
 		return Promise.all(
 			(await printer.print(await parser.getPages()))
