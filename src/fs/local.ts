@@ -4,11 +4,15 @@ import rmrf from "rmfr";
 
 import { Entry, Filesystem } from ".";
 
+export type Config = {
+	root: string;
+};
+
 export default class LocalFilesystem implements Filesystem {
 	private root: string;
 
-	constructor(root: string) {
-		this.root = path.resolve(root);
+	constructor(config: Config) {
+		this.root = path.resolve(config.root);
 	}
 
 	async list(dir: string): Promise<Entry[]> {

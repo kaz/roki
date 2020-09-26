@@ -3,14 +3,20 @@ import Handlebars from "handlebars";
 
 import { Renderer } from "../md";
 import { Page, Revision, Attachment } from "./parser";
-import { Loader } from "../template";
+import { Template } from "../theme/loader";
 
-interface Artifact {
+type Artifact = {
 	path: string;
 	content: Buffer;
-}
+};
 
-type Context = PageListContext | PageContext | RevisionListContext | RevisionContext;
+type CompiledTemplate = (ctx: Context) => Buffer;
+type CompiledTemplateSet = { [key: string]: CompiledTemplate; };
+
+type Context = CommonContext & (PageListContext | PageContext | RevisionListContext | RevisionContext);
+type CommonContext = {
+	preference: any;
+};
 type PageListContext = {
 	pages: PageContext[];
 };
@@ -26,15 +32,20 @@ type RevisionListContext = {
 };
 type RevisionContext = PageContext;
 
-type TemplateDictionary = { [key: string]: (ctx: Context) => Buffer; };
-
-class JobManager {
+export default class Printer {
 	private md: Renderer;
-	private dic: TemplateDictionary;
+	private commonCtx: CommonContext;
+	private templates: CompiledTemplateSet;
 
-	constructor(md: Renderer, dic: TemplateDictionary) {
+	constructor(md: Renderer, rawTemplate: Template, preference: any) {
 		this.md = md;
-		this.dic = dic;
+		this.commonCtx = { preference };
+
+		this.templates = Object.fromEntries(Object.entries(rawTemplate.templates).map(([name, content]) => {
+			const fn = Handlebars.compile(content);
+			return [name, (ctx: object) => Buffer.from(fn(ctx))];
+		}));
+		Object.entries(rawTemplate.partials).forEach(([name, content]) => Handlebars.registerPartial(name, content));
 	}
 
 	private async pageContext(page: Page, render: Boolean): Promise<PageContext> {
@@ -61,13 +72,14 @@ class JobManager {
 		};
 		return {
 			path: "/_pages/index.html",
-			content: this.dic["pageList"](ctx),
+			content: this.templates["pageList"](Object.assign(ctx, this.commonCtx)),
 		};
 	}
 	private async jobPage(page: Page): Promise<Artifact> {
+		const ctx: PageContext = await this.pageContext(page, true);
 		return {
 			path: path.join(page.path, "index.html"),
-			content: this.dic["page"](await this.pageContext(page, true)),
+			content: this.templates["page"](Object.assign(ctx, this.commonCtx)),
 		};
 	}
 	private async jobRevisionList(page: Page): Promise<Artifact> {
@@ -78,13 +90,14 @@ class JobManager {
 		};
 		return {
 			path: path.join(page.path, "_revisions", "index.html"),
-			content: this.dic["revisionList"](ctx),
+			content: this.templates["revisionList"](Object.assign(ctx, this.commonCtx)),
 		};
 	}
 	private async jobRevision(page: Page, revision: Revision): Promise<Artifact> {
+		const ctx: RevisionContext = await this.revisionContext(page, revision, true);
 		return {
 			path: path.join(page.path, "_revisions", revision.id, "index.html"),
-			content: this.dic["revision"](await this.revisionContext(page, revision, true)),
+			content: this.templates["revision"](Object.assign(ctx, this.commonCtx)),
 		};
 	}
 	private async jobAttachment(page: Page, attachment: Attachment): Promise<Artifact> {
@@ -94,7 +107,7 @@ class JobManager {
 		};
 	};
 
-	generateJobs(pages: Page[]): Promise<Artifact>[] {
+	async print(pages: Page[]): Promise<Artifact[]> {
 		const jobs = [];
 		jobs.push(this.jobPageList(pages));
 		for (const page of pages) {
@@ -107,29 +120,6 @@ class JobManager {
 				jobs.push(this.jobAttachment(page, attachment));
 			}
 		}
-		return jobs;
-	}
-}
-
-export default class Printer {
-	private md: Renderer;
-	private loader: Loader;
-
-	constructor(md: Renderer, loader: Loader) {
-		this.md = md;
-		this.loader = loader;
-	}
-
-	async print(pages: Page[]): Promise<Artifact[]> {
-		const { templates, partials } = await this.loader.load();
-
-		Object.entries(partials).forEach(([name, content]) => Handlebars.registerPartial(name, content));
-		const dic = Object.fromEntries(Object.entries(templates).map(([name, content]) => {
-			const fn = Handlebars.compile(content);
-			return [name, (ctx: object) => Buffer.from(fn(ctx))];
-		}));
-
-		const man = new JobManager(this.md, dic);
-		return Promise.all(man.generateJobs(pages));
+		return Promise.all(jobs);
 	}
 }

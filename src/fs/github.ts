@@ -4,6 +4,13 @@ import { GitGetTreeResponseData } from "@octokit/types/dist-types/generated/Endp
 
 import { Entry, Filesystem } from ".";
 
+export type Config = {
+	owner: string;
+	repo: string;
+	ref: string;
+	octokitOpts: OctokitOptions;
+};
+
 type TreeNode = {
 	parent: string;
 	sha: string;
@@ -12,9 +19,7 @@ type TreeNode = {
 
 export default class GithubFilesystem implements Filesystem {
 	private octokit: Octokit;
-	private owner: string;
-	private repo: string;
-	private ref: string;
+	private config: Config;
 	private base?: string;
 
 	private trees: { [key: string]: TreeNode; } = {};
@@ -22,23 +27,21 @@ export default class GithubFilesystem implements Filesystem {
 
 	private tx: { path: string; content?: Buffer; }[] = [];
 
-	private constructor(owner: string, repo: string, ref: string, opts: OctokitOptions) {
-		this.octokit = new Octokit(opts);
-		this.owner = owner;
-		this.repo = repo;
-		this.ref = ref;
+	private constructor(config: Config) {
+		this.octokit = new Octokit(config.octokitOpts);
+		this.config = config;
 	}
 
-	static async init(owner: string, repo: string, ref: string, opts: OctokitOptions): Promise<GithubFilesystem> {
-		const ghfs = new GithubFilesystem(owner, repo, ref, opts);
+	static async init(config: Config): Promise<GithubFilesystem> {
+		const ghfs = new GithubFilesystem(config);
 
 		const { data: { object: { sha } } } = await ghfs.octokit.git.getRef({
 			headers: {
 				"If-None-Match": "",
 			},
-			owner,
-			repo,
-			ref
+			owner: config.owner,
+			repo: config.repo,
+			ref: config.ref,
 		});
 
 		ghfs.base = sha;
@@ -50,8 +53,8 @@ export default class GithubFilesystem implements Filesystem {
 	private async getTree(parent: string, sha: string): Promise<TreeNode> {
 		if (!(sha in this.trees)) {
 			const { data } = await this.octokit.git.getTree({
-				owner: this.owner,
-				repo: this.repo,
+				owner: this.config.owner,
+				repo: this.config.repo,
 				tree_sha: sha,
 			});
 
@@ -71,8 +74,8 @@ export default class GithubFilesystem implements Filesystem {
 	private async getBlob(sha: string): Promise<Buffer> {
 		if (!(sha in this.blobs)) {
 			const { data: { content, encoding } } = await this.octokit.git.getBlob({
-				owner: this.owner,
-				repo: this.repo,
+				owner: this.config.owner,
+				repo: this.config.repo,
 				file_sha: sha,
 			});
 
@@ -139,15 +142,15 @@ export default class GithubFilesystem implements Filesystem {
 		}
 
 		const { data: { sha: tree } } = await this.octokit.git.createTree({
-			owner: this.owner,
-			repo: this.repo,
+			owner: this.config.owner,
+			repo: this.config.repo,
 			base_tree: bare ? undefined : this.base,
 			tree: await Promise.all(this.tx.map(async ({ path, content }) => {
 				const ret = { path, sha: null as string | null, mode: "100644" as "100644" };
 				if (content) {
 					const { data: { sha } } = await this.octokit.git.createBlob({
-						owner: this.owner,
-						repo: this.repo,
+						owner: this.config.owner,
+						repo: this.config.repo,
 						encoding: "base64",
 						content: content.toString("base64"),
 					});
@@ -157,16 +160,16 @@ export default class GithubFilesystem implements Filesystem {
 			})),
 		});
 		const { data: { sha } } = await this.octokit.git.createCommit({
-			owner: this.owner,
-			repo: this.repo,
+			owner: this.config.owner,
+			repo: this.config.repo,
 			tree,
 			parents: [this.base!],
 			message,
 		});
 		await this.octokit.git.updateRef({
-			owner: this.owner,
-			repo: this.repo,
-			ref: this.ref,
+			owner: this.config.owner,
+			repo: this.config.repo,
+			ref: this.config.ref,
 			sha,
 		});
 	}

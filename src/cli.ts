@@ -1,19 +1,16 @@
-import LocalFilesystem from "./fs/local";
-import RendererFactory from "./md";
-import LoaderFactory from "./template";
+import serialized from "../template";
 import Roki from "./roki";
+import { ThemeLoader } from "./theme/loader";
 
 (async () => {
-	const srcfs = new LocalFilesystem("./tmp/src");
-	const dstfs = new LocalFilesystem("./tmp/dst");
-	const md = await RendererFactory();
-	const loader = await LoaderFactory();
+	const themeLoader = ThemeLoader.deserialize(await serialized());
+	const theme = await themeLoader.instantiate();
 
-	const roki = new Roki(srcfs, dstfs);
+	const roki = new Roki(await theme.getSourceFilesystem(), await theme.getDestinationFilesystem());
 
 	console.log("roki.newRevision");
 	await roki.newRevision("a/b/README.md", "# Hello, world!");
 
 	console.log("roki.generate");
-	await roki.generate(md, loader);
+	await roki.generate(theme);
 })();
