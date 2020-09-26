@@ -14,6 +14,7 @@ interface PageContext {
 	path: string;
 	created: Date;
 	revision: Revision;
+	rendered?: string;
 }
 type RevisionContext = PageContext;
 
@@ -28,6 +29,23 @@ class JobManager {
 		this.dic = dic;
 	}
 
+	private async pageContext(page: Page, render: Boolean): Promise<PageContext> {
+		return {
+			path: page.path,
+			created: page.revisions[page.revisions.length - 1].timestamp,
+			revision: page.revisions[0],
+			rendered: render ? await this.md.render(page.revisions[0].content) : undefined,
+		};
+	}
+	private async revisionContext(page: Page, revision: Revision, render: Boolean): Promise<PageContext> {
+		return {
+			path: page.path,
+			created: page.revisions[page.revisions.length - 1].timestamp,
+			revision,
+			rendered: render ? await this.md.render(revision.content) : undefined,
+		};
+	}
+
 	private async jobPageList(pages: Page[]): Promise<Artifact> {
 		return {
 			path: "/_pages/index.html",
@@ -37,11 +55,7 @@ class JobManager {
 	private async jobPage(page: Page): Promise<Artifact> {
 		return {
 			path: path.join(page.path, "index.html"),
-			content: this.dic["page"]({
-				path: page.path,
-				created: page.revisions[page.revisions.length - 1].timestamp,
-				revision: Object.assign({}, page.revisions[0], { content: await this.md.render(page.revisions[0].content) }),
-			} as PageContext),
+			content: this.dic["page"](await this.pageContext(page, true)),
 		};
 	}
 	private async jobRevisionList(page: Page): Promise<Artifact> {
@@ -53,11 +67,7 @@ class JobManager {
 	private async jobRevision(page: Page, revision: Revision): Promise<Artifact> {
 		return {
 			path: path.join(page.path, "_revisions", revision.id, "index.html"),
-			content: this.dic["revision"]({
-				path: page.path,
-				created: page.revisions[page.revisions.length - 1].timestamp,
-				revision: Object.assign({}, revision, { content: await this.md.render(revision.content) }),
-			} as RevisionContext),
+			content: this.dic["revision"](await this.revisionContext(page, revision, true)),
 		};
 	}
 	private async jobAttachment(page: Page, attachment: Attachment): Promise<Artifact> {
