@@ -5,7 +5,7 @@ import { Renderer } from "../md";
 import MarkdownItRenderer from "../md/markdown-it";
 import { FilesystemConfig, GithubFilesystemConfig, LocalFilesystemConfig, Template, ThemeSource } from "./loader";
 
-export class Theme {
+export default class Theme {
 	private src: ThemeSource;
 
 	constructor(src: ThemeSource) {

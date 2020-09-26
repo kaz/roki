@@ -1,21 +1,23 @@
 import fs from "fs";
 import path from "path";
 
+import { Config as LocalFilesystemConfig } from "../fs/local";
+import { Config as GithubFilesystemConfig } from "../fs/github";
+import { Config as MarkdownItRenderConfig } from "../md/markdown-it";
+import Theme from ".";
+
 type TemplateStore = { [key: string]: string; };
 export type Template = {
 	templates: TemplateStore;
 	partials: TemplateStore;
 };
 
-import { Config as MarkdownItRenderConfig } from "../md/markdown-it";
 export { MarkdownItRenderConfig };
 export type RenderConfig = {
 	backend: "markdown-it";
 	config: MarkdownItRenderConfig;
 };
 
-import { Config as LocalFilesystemConfig } from "../fs/local";
-import { Config as GithubFilesystemConfig } from "../fs/github";
 export { LocalFilesystemConfig, GithubFilesystemConfig };
 export type FilesystemConfig = {
 	backend: "local" | "github";
@@ -36,9 +38,7 @@ export type ThemeSource = {
 
 type SerializedThemeLoader = { code: string; };
 
-import { Theme } from ".";
-
-export abstract class ThemeLoader {
+export default abstract class ThemeLoader {
 	abstract async load(): Promise<ThemeSource>;
 
 	async instantiate(): Promise<Theme> {

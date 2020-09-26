@@ -2,7 +2,7 @@ import crypto from "crypto";
 import yaml from "js-yaml";
 
 import { Filesystem } from "../fs";
-import { Theme } from "../theme";
+import Theme from "../theme";
 import SourceParser, { PathTranslator, Revision } from "./parser";
 import Printer from "./printer";
 

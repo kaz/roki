@@ -1,6 +1,6 @@
 import serialized from "../template";
 import Roki from "./roki";
-import { ThemeLoader } from "./theme/loader";
+import ThemeLoader from "./theme/loader";
 
 (async () => {
 	const themeLoader = ThemeLoader.deserialize(await serialized());
