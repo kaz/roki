@@ -16,6 +16,10 @@ interface PageContext {
 	revision: Revision;
 	rendered?: string;
 }
+interface RevisionListContext {
+	page: PageContext;
+	revisions: RevisionContext[];
+}
 type RevisionContext = PageContext;
 
 type TemplateDictionary = { [key: string]: (ctx: object) => Buffer; };
@@ -61,7 +65,10 @@ class JobManager {
 	private async jobRevisionList(page: Page): Promise<Artifact> {
 		return {
 			path: path.join(page.path, "_revisions", "index.html"),
-			content: Buffer.from("jobRevisionList"),
+			content: this.dic["revisionList"]({
+				page: await this.pageContext(page, false),
+				revisions: await Promise.all(page.revisions.map(revision => this.revisionContext(page, revision, false))),
+			} as RevisionListContext),
 		};
 	}
 	private async jobRevision(page: Page, revision: Revision): Promise<Artifact> {
