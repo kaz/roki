@@ -41,7 +41,7 @@ export type Attachment = {
 	content: Buffer;
 };
 
-export default class SourceParser {
+export class SourceParser {
 	private src: Filesystem;
 
 	constructor(src: Filesystem) {

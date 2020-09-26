@@ -1,5 +1,5 @@
 import { BaseConfig } from "./src/config";
-import ConfigLoader from "./src/config/loader";
+import { ConfigLoader } from "./src/config/loader";
 
 export default new class extends ConfigLoader {
 	load(): BaseConfig {

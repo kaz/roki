@@ -17,7 +17,7 @@ type TreeNode = {
 	tree: GitGetTreeResponseData["tree"];
 };
 
-export default class GithubFilesystem implements Filesystem {
+export class GithubFilesystem implements Filesystem {
 	private octokit: Octokit;
 	private config: Config;
 	private base?: string;

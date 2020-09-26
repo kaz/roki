@@ -7,7 +7,7 @@ export type Config = {
 	option?: Options;
 };
 
-export default class MarkdownItRenderer implements Renderer {
+export class MarkdownItRenderer implements Renderer {
 	private md: MarkdownIt;
 
 	constructor(config: Config) {

@@ -8,7 +8,7 @@ export type Config = {
 	root: string;
 };
 
-export default class LocalFilesystem implements Filesystem {
+export class LocalFilesystem implements Filesystem {
 	private root: string;
 
 	constructor(config: Config) {

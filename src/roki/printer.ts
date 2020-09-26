@@ -32,7 +32,7 @@ type RevisionListContext = {
 };
 type RevisionContext = PageContext;
 
-export default class Printer {
+export class Printer {
 	private md: Renderer;
 	private commonCtx: CommonContext;
 	private templates: CompiledTemplateSet;

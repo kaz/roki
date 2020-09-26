@@ -1,13 +1,8 @@
 import { Filesystem } from "../fs";
-import GithubFilesystem from "../fs/github";
-import LocalFilesystem from "../fs/local";
 import { Renderer } from "../md";
-import MarkdownItRenderer from "../md/markdown-it";
-
-
-import { Config as LocalFilesystemConfig } from "../fs/local";
-import { Config as GithubFilesystemConfig } from "../fs/github";
-import { Config as MarkdownItRenderConfig } from "../md/markdown-it";
+import { Config as LocalFilesystemConfig, LocalFilesystem } from "../fs/local";
+import { Config as GithubFilesystemConfig, GithubFilesystem } from "../fs/github";
+import { Config as MarkdownItRenderConfig, MarkdownItRenderer } from "../md/markdown-it";
 
 export { MarkdownItRenderConfig };
 export type RenderConfig = {
@@ -27,7 +22,7 @@ export type BaseConfig = {
 	dstfs: FilesystemConfig;
 };
 
-export default class Config {
+export class Config {
 	private base: BaseConfig;
 
 	constructor(base: BaseConfig) {

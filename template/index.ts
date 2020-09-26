@@ -1,5 +1,5 @@
 import { Theme } from "../src/theme";
-import ThemeLoader from "../src/theme/loader";
+import { ThemeLoader } from "../src/theme/loader";
 
 class SampleThemeLoader extends ThemeLoader {
 	async load(): Promise<Theme> {

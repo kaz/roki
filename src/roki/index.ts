@@ -4,8 +4,8 @@ import yaml from "js-yaml";
 import { Filesystem } from "../fs";
 import { Renderer } from "../md";
 import { Theme } from "../theme";
-import SourceParser, { PathTranslator, Revision } from "./parser";
-import Printer from "./printer";
+import { Revision, PathTranslator, SourceParser } from "./parser";
+import { Printer } from "./printer";
 
 export default class Roki {
 	private src: Filesystem;

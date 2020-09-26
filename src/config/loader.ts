@@ -1,6 +1,6 @@
-import Config, { BaseConfig } from ".";
+import { BaseConfig, Config } from ".";
 
-export default abstract class ConfigLoader {
+export abstract class ConfigLoader {
 	abstract load(): BaseConfig;
 
 	instantiate(): Config {

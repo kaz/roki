@@ -5,7 +5,7 @@ import { Template, TemplateStore, Theme } from ".";
 
 type Serialized = { code: string; };
 
-export default abstract class ThemeLoader {
+export abstract class ThemeLoader {
 	abstract async load(): Promise<Theme>;
 
 	serialize(): () => Promise<Serialized> {
