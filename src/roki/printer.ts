@@ -10,22 +10,23 @@ interface Artifact {
 	content: Buffer;
 }
 
-interface PageListContext {
+type Context = PageListContext | PageContext | RevisionListContext | RevisionContext;
+type PageListContext = {
 	pages: PageContext[];
-}
-interface PageContext {
+};
+type PageContext = {
 	path: string;
 	created: Date;
 	revision: Revision;
 	rendered?: string;
-}
-interface RevisionListContext {
+};
+type RevisionListContext = {
 	page: PageContext;
 	revisions: RevisionContext[];
-}
+};
 type RevisionContext = PageContext;
 
-type TemplateDictionary = { [key: string]: (ctx: object) => Buffer; };
+type TemplateDictionary = { [key: string]: (ctx: Context) => Buffer; };
 
 class JobManager {
 	private md: Renderer;

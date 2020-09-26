@@ -4,11 +4,11 @@ import { GitGetTreeResponseData } from "@octokit/types/dist-types/generated/Endp
 
 import { Entry, Filesystem } from ".";
 
-interface TreeNode {
+type TreeNode = {
 	parent: string;
 	sha: string;
 	tree: GitGetTreeResponseData["tree"];
-}
+};
 
 export default class GithubFilesystem implements Filesystem {
 	private octokit: Octokit;

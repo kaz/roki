@@ -3,7 +3,6 @@ import MarkdownIt from "markdown-it";
 import { Renderer } from ".";
 
 export default class MarkdownItRenderer implements Renderer {
-
 	private md: MarkdownIt;
 
 	constructor() {

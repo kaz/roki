@@ -1,7 +1,7 @@
-export interface Entry {
+export type Entry = {
 	name: string;
 	directory: Boolean;
-}
+};
 
 export interface Filesystem {
 	list(path: string): Promise<Entry[]>;

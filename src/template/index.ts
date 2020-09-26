@@ -2,10 +2,10 @@ import LocalLoader from "./local";
 
 export type TemplateStore = { [key: string]: string; };
 
-export interface Template {
+export type Template = {
 	templates: TemplateStore;
 	partials: TemplateStore;
-}
+};
 
 export interface Loader {
 	load(): Promise<Template>;

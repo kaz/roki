@@ -1,5 +1,4 @@
 import fs from "fs";
-import { partials, templates } from "handlebars";
 import path from "path";
 
 import { Template, Loader, TemplateStore } from ".";

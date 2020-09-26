@@ -26,20 +26,20 @@ export class PathTranslator {
 	}
 }
 
-export interface Page {
+export type Page = {
 	path: string;
 	revisions: Revision[];
 	attachments: Attachment[];
-}
-export interface Revision {
+};
+export type Revision = {
 	id: string;
 	timestamp: Date;
 	content: string;
-}
-export interface Attachment {
+};
+export type Attachment = {
 	filename: string;
 	content: Buffer;
-}
+};
 
 export default class SourceParser {
 	private src: Filesystem;
