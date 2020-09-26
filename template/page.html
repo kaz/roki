@@ -1,13 +1,14 @@
 {{#> _head }}
-<title>{{ path }} - Roki</title>
+<title>{{ path }} - {{ preference.siteName }}</title>
 {{/ _head }}
 
 {{#> _body }}
 <main>
 	{{{ rendered }}}
 </main>
-<footer>
-	updated: {{ revision.timestamp }}
-	created: {{ created }}
-</footer>
+<hr>
+<ul>
+	<li>updated: {{ revision.timestamp }}</li>
+	<li>created: {{ created }}</li>
+</ul>
 {{/ _body }}

@@ -26,7 +26,7 @@ class SampleThemeLoader extends ThemeLoader {
 			},
 			preference: {
 				siteName: "Roki Sample Site",
-				copyright: "Roki Authors",
+				copyright: "2020 Roki Authors",
 			},
 		};
 	}
