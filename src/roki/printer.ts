@@ -54,11 +54,13 @@ class JobManager {
 	}
 
 	private async jobPageList(pages: Page[]): Promise<Artifact> {
+		const ctx: PageListContext = {
+			pages: (await Promise.all(pages.map(page => this.pageContext(page, false))))
+				.sort((a, b) => b.revision.timestamp.getTime() - a.revision.timestamp.getTime()),
+		};
 		return {
 			path: "/_pages/index.html",
-			content: this.dic["pageList"]({
-				pages: await Promise.all(pages.map(page => this.pageContext(page, false))),
-			} as PageListContext),
+			content: this.dic["pageList"](ctx),
 		};
 	}
 	private async jobPage(page: Page): Promise<Artifact> {
@@ -68,12 +70,14 @@ class JobManager {
 		};
 	}
 	private async jobRevisionList(page: Page): Promise<Artifact> {
+		const ctx: RevisionListContext = {
+			page: await this.pageContext(page, false),
+			revisions: (await Promise.all(page.revisions.map(revision => this.revisionContext(page, revision, false))))
+				.sort((a, b) => b.revision.timestamp.getTime() - a.revision.timestamp.getTime()),
+		};
 		return {
 			path: path.join(page.path, "_revisions", "index.html"),
-			content: this.dic["revisionList"]({
-				page: await this.pageContext(page, false),
-				revisions: await Promise.all(page.revisions.map(revision => this.revisionContext(page, revision, false))),
-			} as RevisionListContext),
+			content: this.dic["revisionList"](ctx),
 		};
 	}
 	private async jobRevision(page: Page, revision: Revision): Promise<Artifact> {
