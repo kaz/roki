@@ -10,6 +10,9 @@ interface Artifact {
 	content: Buffer;
 }
 
+interface PageListContext {
+	pages: PageContext[];
+}
 interface PageContext {
 	path: string;
 	created: Date;
@@ -53,7 +56,9 @@ class JobManager {
 	private async jobPageList(pages: Page[]): Promise<Artifact> {
 		return {
 			path: "/_pages/index.html",
-			content: Buffer.from("jobPageList"),
+			content: this.dic["pageList"]({
+				pages: await Promise.all(pages.map(page => this.pageContext(page, false))),
+			} as PageListContext),
 		};
 	}
 	private async jobPage(page: Page): Promise<Artifact> {

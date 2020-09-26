@@ -1,0 +1,13 @@
+{{#> _head }}
+<title>Pages - Roki</title>
+{{/ _head }}
+
+{{#> _body }}
+<main>
+	<ul>
+		{{# each pages }}
+		<li>{{ revision.timestamp }} <a href="{{ path }}/">{{ path }}</a></li>
+		{{/ each }}
+	</ul>
+</main>
+{{/ _body }}
