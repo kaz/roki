@@ -1,4 +1,4 @@
-import { Filesystem, SyncOpts } from "../fs";
+import { Filesystem } from "../fs";
 import { Renderer } from "../md";
 import { Config as LocalFilesystemConfig, LocalFilesystem } from "../fs/local";
 import { Config as GithubFilesystemConfig, GithubFilesystem } from "../fs/github";
@@ -25,9 +25,6 @@ export type BaseConfig = {
 export class Config {
 	private base: BaseConfig;
 
-	private srcfs?: Filesystem;
-	private dstfs?: Filesystem;
-
 	constructor(base: BaseConfig) {
 		this.base = base;
 	}
@@ -50,18 +47,9 @@ export class Config {
 		throw new Error(`Unexpected filesystem backend: ${backend}`);
 	}
 	async getSourceFilesystem(): Promise<Filesystem> {
-		return this.srcfs = await this.getFilesystem(this.base.srcfs);
+		return await this.getFilesystem(this.base.srcfs);
 	}
 	async getDestinationFilesystem(): Promise<Filesystem> {
-		return this.dstfs = await this.getFilesystem(this.base.dstfs);
-	}
-
-	async finalize(srcOpts: SyncOpts, dstOpts: SyncOpts) {
-		if (this.srcfs && this.srcfs.sync) {
-			await this.srcfs.sync(srcOpts);
-		}
-		if (this.dstfs && this.dstfs.sync) {
-			await this.dstfs.sync(dstOpts);
-		}
+		return await this.getFilesystem(this.base.dstfs);
 	}
 }

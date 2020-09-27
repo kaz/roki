@@ -43,8 +43,6 @@ export class GithubFilesystem implements Filesystem {
 		ghfs.baseTree = tree_sha;
 		ghfs.baseCommit = commit_sha;
 
-		ghfs.trees["root"] = await ghfs.getTree("root", tree_sha);
-
 		return ghfs;
 	}
 
@@ -90,6 +88,7 @@ export class GithubFilesystem implements Filesystem {
 				tree: []
 			};
 		}
+
 		if (!(sha in this.trees)) {
 			const { data } = await this.octokit.git.getTree({
 				owner: this.config.owner,
@@ -145,10 +144,11 @@ export class GithubFilesystem implements Filesystem {
 		throw new Error(`not found: ${cur}`);
 	}
 	private async find(path: string): Promise<TreeNode> {
+		const rootNode = await this.getTree("", this.baseTree!);
 		if (path == "") {
-			return this.getTree("", "root");
+			return rootNode;
 		}
-		return this._find(await this.getTree("", "root"), path.split("/"));
+		return this._find(rootNode, path.split("/"));
 	}
 
 	async list(path: string): Promise<Entry[]> {
@@ -183,7 +183,7 @@ export class GithubFilesystem implements Filesystem {
 			return;
 		}
 
-		const { data: { sha: tree } } = await this.octokit.git.createTree({
+		const { data: { sha: tree_sha } } = await this.octokit.git.createTree({
 			owner: this.config.owner,
 			repo: this.config.repo,
 			base_tree: bare ? undefined : this.baseTree,
@@ -201,10 +201,10 @@ export class GithubFilesystem implements Filesystem {
 				return ret;
 			})),
 		});
-		const { data: { sha } } = await this.octokit.git.createCommit({
+		const { data: { sha: commit_sha } } = await this.octokit.git.createCommit({
 			owner: this.config.owner,
 			repo: this.config.repo,
-			tree,
+			tree: tree_sha,
 			parents: bare ? [] : [this.baseCommit!],
 			message,
 		});
@@ -213,7 +213,10 @@ export class GithubFilesystem implements Filesystem {
 			repo: this.config.repo,
 			ref: this.config.ref,
 			force: bare,
-			sha,
+			sha: commit_sha,
 		});
+
+		this.baseTree = tree_sha;
+		this.baseCommit = commit_sha;
 	}
 }
