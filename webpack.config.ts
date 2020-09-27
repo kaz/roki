@@ -15,6 +15,9 @@ const config: Configuration = {
 	},
 	resolve: {
 		extensions: [".ts", ".js"],
+		alias: {
+			handlebars: "handlebars/dist/handlebars",
+		},
 	},
 };
 
@@ -25,6 +28,9 @@ const webConfig: Configuration = {
 	output: {
 		filename: "app.js",
 		path: path.join(__dirname, "./dist"),
+	},
+	node: {
+		fs: "empty",
 	},
 };
 

@@ -3,7 +3,7 @@ import theme from "../theme/def";
 import configLoader from "../config";
 
 (async () => {
-	const config = configLoader.instantiate();
+	const config = configLoader.instantiate(process.env);
 	const roki = new Roki(await config.getSourceFilesystem(), await config.getDestinationFilesystem());
 
 	console.log("roki.newRevision");
