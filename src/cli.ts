@@ -1,13 +1,8 @@
-import configLoader from "../config";
-import serializedThemeLoader from "../template";
-
 import Roki from "./roki";
-import { ThemeLoader } from "./theme/loader";
+import theme from "../theme/def";
+import configLoader from "../config";
 
 (async () => {
-	const themeLoader = ThemeLoader.deserialize(await serializedThemeLoader());
-	const theme = await themeLoader.load();
-
 	const config = configLoader.instantiate();
 	const roki = new Roki(await config.getSourceFilesystem(), await config.getDestinationFilesystem());
 
