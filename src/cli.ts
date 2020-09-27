@@ -11,4 +11,13 @@ import configLoader from "../config";
 
 	console.log("roki.generate");
 	await roki.generate(await config.getRenderer(), theme);
+
+	console.log("config.finalize");
+	await config.finalize({
+		message: new Date().toString(),
+		bare: false,
+	}, {
+		message: new Date().toString(),
+		bare: true,
+	});
 })();

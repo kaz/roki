@@ -52,7 +52,7 @@ export default class Roki {
 
 		return Promise.all(
 			(await printer.print(await parser.getPages()))
-				.map(({ path, content }) => this.dst.writeFile(path, content))
+				.map(({ path, content }) => this.dst.writeFile(PathTranslator.onFilesystem(path), content))
 		);
 	}
 }

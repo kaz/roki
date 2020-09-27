@@ -2,7 +2,9 @@ import { Octokit } from "@octokit/rest";
 import { OctokitOptions } from "@octokit/core/dist-types/types";
 import { GitGetTreeResponseData } from "@octokit/types/dist-types/generated/Endpoints";
 
-import { Entry, Filesystem } from ".";
+import { Entry, Filesystem, SyncOpts } from ".";
+
+const EMPTY_TREE_SHA = "4b825dc642cb6eb9a060e54bf8d69288fbee4904";
 
 export type Config = {
 	owner: string;
@@ -20,7 +22,9 @@ type TreeNode = {
 export class GithubFilesystem implements Filesystem {
 	private octokit: Octokit;
 	private config: Config;
-	private base?: string;
+
+	private baseTree?: string;
+	private baseCommit?: string;
 
 	private trees: { [key: string]: TreeNode; } = {};
 	private blobs: { [key: string]: Buffer; } = {};
@@ -35,22 +39,57 @@ export class GithubFilesystem implements Filesystem {
 	static async init(config: Config): Promise<GithubFilesystem> {
 		const ghfs = new GithubFilesystem(config);
 
-		const { data: { object: { sha } } } = await ghfs.octokit.git.getRef({
-			headers: {
-				"If-None-Match": "",
-			},
-			owner: config.owner,
-			repo: config.repo,
-			ref: config.ref,
-		});
+		const { commit_sha, tree_sha } = await ghfs.getOrCreateRef();
+		ghfs.baseTree = tree_sha;
+		ghfs.baseCommit = commit_sha;
 
-		ghfs.base = sha;
-		ghfs.trees["root"] = await ghfs.getTree("root", sha);
+		ghfs.trees["root"] = await ghfs.getTree("root", tree_sha);
 
 		return ghfs;
 	}
 
+	private async getOrCreateRef(): Promise<{ commit_sha: string; tree_sha: string; }> {
+		try {
+			const { data: { object: { sha: commit_sha } } } = await this.octokit.git.getRef({
+				owner: this.config.owner,
+				repo: this.config.repo,
+				ref: this.config.ref,
+				headers: {
+					"If-None-Match": "",
+				},
+			});
+			const { data: { tree: { sha: tree_sha } } } = await this.octokit.git.getCommit({
+				owner: this.config.owner,
+				repo: this.config.repo,
+				commit_sha,
+			});
+			return { commit_sha, tree_sha };
+		} catch (e) {
+			const { data: { sha } } = await this.octokit.git.createCommit({
+				owner: this.config.owner,
+				repo: this.config.repo,
+				tree: EMPTY_TREE_SHA,
+				parents: [],
+				message: "init",
+			});
+			await this.octokit.git.createRef({
+				owner: this.config.owner,
+				repo: this.config.repo,
+				ref: `refs/${this.config.ref}`,
+				sha,
+			});
+			return { commit_sha: sha, tree_sha: EMPTY_TREE_SHA };
+		}
+	}
+
 	private async getTree(parent: string, sha: string): Promise<TreeNode> {
+		if (sha == EMPTY_TREE_SHA) {
+			return {
+				parent: EMPTY_TREE_SHA,
+				sha: EMPTY_TREE_SHA,
+				tree: []
+			};
+		}
 		if (!(sha in this.trees)) {
 			const { data } = await this.octokit.git.getTree({
 				owner: this.config.owner,
@@ -106,6 +145,9 @@ export class GithubFilesystem implements Filesystem {
 		throw new Error(`not found: ${cur}`);
 	}
 	private async find(path: string): Promise<TreeNode> {
+		if (path == "") {
+			return this.getTree("", "root");
+		}
 		return this._find(await this.getTree("", "root"), path.split("/"));
 	}
 
@@ -136,7 +178,7 @@ export class GithubFilesystem implements Filesystem {
 		this.tx.push({ path, content });
 	}
 
-	async commit(message: string, bare: Boolean = false) {
+	async sync({ message, bare }: SyncOpts) {
 		if (!this.tx.length) {
 			return;
 		}
@@ -144,7 +186,7 @@ export class GithubFilesystem implements Filesystem {
 		const { data: { sha: tree } } = await this.octokit.git.createTree({
 			owner: this.config.owner,
 			repo: this.config.repo,
-			base_tree: bare ? undefined : this.base,
+			base_tree: bare ? undefined : this.baseTree,
 			tree: await Promise.all(this.tx.map(async ({ path, content }) => {
 				const ret = { path, sha: null as string | null, mode: "100644" as "100644" };
 				if (content) {
@@ -163,13 +205,14 @@ export class GithubFilesystem implements Filesystem {
 			owner: this.config.owner,
 			repo: this.config.repo,
 			tree,
-			parents: [this.base!],
+			parents: bare ? [] : [this.baseCommit!],
 			message,
 		});
 		await this.octokit.git.updateRef({
 			owner: this.config.owner,
 			repo: this.config.repo,
 			ref: this.config.ref,
+			force: bare,
 			sha,
 		});
 	}

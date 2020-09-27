@@ -7,8 +7,12 @@ const REVISION_DIR = "_revision";
 const ATTACHMENT_DIR = "_attachment";
 
 export class PathTranslator {
+	static onFilesystem(virtual: string): string {
+		return path.resolve("/", virtual).substr(1);
+	}
+
 	static pageDir(page: string): string {
-		return path.resolve("/", page).substr(1);
+		return this.onFilesystem(page);
 	}
 
 	static revisionDir(page: string): string {

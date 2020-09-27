@@ -11,16 +11,26 @@ export default new class extends ConfigLoader {
 				}
 			},
 			srcfs: {
-				backend: "local",
+				backend: "github",
 				config: {
-					root: this.env("SRC_DIR"),
-				}
+					owner: "kaz",
+					repo: "test",
+					ref: "heads/master",
+					octokitOpts: {
+						auth: this.env("GITHUB_TOKEN"),
+					},
+				},
 			},
 			dstfs: {
-				backend: "local",
+				backend: "github",
 				config: {
-					root: this.env("DST_DIR"),
-				}
+					owner: "kaz",
+					repo: "test",
+					ref: "heads/gh-pages",
+					octokitOpts: {
+						auth: this.env("GITHUB_TOKEN"),
+					},
+				},
 			},
 		};
 	}
