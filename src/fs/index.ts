@@ -1,6 +1,6 @@
 export type Entry = {
 	name: string;
-	directory: Boolean;
+	directory: boolean;
 };
 
 export type SyncOpts = {

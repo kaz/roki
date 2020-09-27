@@ -48,7 +48,7 @@ export class Printer {
 		Object.entries(theme.template.partials).forEach(([name, content]) => Handlebars.registerPartial(name, content));
 	}
 
-	private async pageContext(page: Page, render: Boolean): Promise<PageContext> {
+	private async pageContext(page: Page, render: boolean): Promise<PageContext> {
 		return {
 			path: page.path,
 			created: page.revisions[page.revisions.length - 1].timestamp,
@@ -56,7 +56,7 @@ export class Printer {
 			rendered: render ? await this.md.render(page.revisions[0].content) : undefined,
 		};
 	}
-	private async revisionContext(page: Page, revision: Revision, render: Boolean): Promise<PageContext> {
+	private async revisionContext(page: Page, revision: Revision, render: boolean): Promise<PageContext> {
 		return {
 			path: page.path,
 			created: page.revisions[page.revisions.length - 1].timestamp,
